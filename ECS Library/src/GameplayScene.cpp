@@ -17,6 +17,10 @@ void GameplayScene::processEvents()
 	while (m_window->pollEvent(event)) {
 		if (sf::Event::Closed == event.type)
 			m_window->close();
+
+		if (sf::Event::KeyPressed == event.type) {
+			m_window->close();
+		}
 	}
 }
 
