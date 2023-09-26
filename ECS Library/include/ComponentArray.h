@@ -2,9 +2,10 @@
 #define COMPONENT_ARRAY_H
 
 #include <algorithm>
-#include <vector>
 #include <assert.h>
+#include <stdexcept>
 #include <unordered_map>
+#include <vector>
 
 #include <Entity.h>
 
@@ -38,7 +39,7 @@ template<typename COMPONENT_TYPE>
 inline void ComponentArray<COMPONENT_TYPE>::insert(Entity entity, COMPONENT_TYPE component)
 {
 	if (entityToIndex.find(entity) != entityToIndex.end()) {
-		throw std::exception("Component added to same entity more than once.");
+		throw std::runtime_error("Component added to same entity more than once.");
 	}
 	
 	components.push_back(component);
@@ -51,7 +52,7 @@ template<typename COMPONENT_TYPE>
 inline void ComponentArray<COMPONENT_TYPE>::remove(Entity entity)
 {
 	if (entityToIndex.find(entity) == entityToIndex.end()) {
-		throw std::exception("Trying to remove component from an entity that doesn't have that component.");
+		throw std::runtime_error("Trying to remove component from an entity that doesn't have that component.");
 	}
 
 	int lastIndex = components.size() - 1;
@@ -76,7 +77,7 @@ template<typename COMPONENT_TYPE>
 inline void ComponentArray<COMPONENT_TYPE>::tryRemove(Entity entity)
 {
 	if (entityToIndex.find(entity) != entityToIndex.end())
-		remove(t_entity);
+		remove(entity);
 }
 
 
@@ -84,8 +85,10 @@ template<typename COMPONENT_TYPE>
 inline COMPONENT_TYPE& ComponentArray<COMPONENT_TYPE>::get(Entity entity)
 {
 	if (entityToIndex.find(entity) == entityToIndex.end()) {
-		throw std::Exception("Trying to retrieve a component from an entity that doesn't have it.")
+		throw std::runtime_error("Trying to retrieve a component from an entity that doesn't have it.")
 	}
+
+	return components[entityToIndex[entity]];
 }
 
 
