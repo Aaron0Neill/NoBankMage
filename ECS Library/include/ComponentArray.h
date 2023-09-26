@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <iterator>
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
@@ -21,9 +22,8 @@ public:
 	void insert(Entity entity, COMPONENT_TYPE component);
 	void remove(Entity entity);
 	void tryRemove(Entity entity);
-	COMPONENT_TYPE& get(Entity entity);
-	
-	COMPONENT_TYPE operator[](Entity entity) const;
+	[[nodiscard]] COMPONENT_TYPE& get(Entity entity);
+	[[nodiscard]] COMPONENT_TYPE operator[](Entity entity) const;
 
 private:
 	// This is a packed array, so we must keep the mapping of entities to locations
@@ -38,24 +38,24 @@ private:
 template<typename COMPONENT_TYPE>
 inline void ComponentArray<COMPONENT_TYPE>::insert(Entity entity, COMPONENT_TYPE component)
 {
-	if (entityToIndex.find(entity) != entityToIndex.end()) {
+	if (auto it = entityToIndex.find(entity); it != entityToIndex.end()) {
 		throw std::runtime_error("Component added to same entity more than once.");
 	}
 	
 	components.push_back(component);
 	indexToEntity.push_back(entity);
-	entityToIndex[entity] = components.size() - 1;
+	entityToIndex[entity] = std::size(components) - 1;
 }
 
 
 template<typename COMPONENT_TYPE>
 inline void ComponentArray<COMPONENT_TYPE>::remove(Entity entity)
 {
-	if (entityToIndex.find(entity) == entityToIndex.end()) {
+	if (auto it = entityToIndex.find(entity); it == entityToIndex.end()) {
 		throw std::runtime_error("Trying to remove component from an entity that doesn't have that component.");
 	}
 
-	int lastIndex = components.size() - 1;
+	int lastIndex = std::size(components) - 1;
 	int removeIndex = entityToIndex[entity];
 
 	// Overwrite the entity to be deleted with the last active entity
@@ -76,15 +76,15 @@ inline void ComponentArray<COMPONENT_TYPE>::remove(Entity entity)
 template<typename COMPONENT_TYPE>
 inline void ComponentArray<COMPONENT_TYPE>::tryRemove(Entity entity)
 {
-	if (entityToIndex.find(entity) != entityToIndex.end())
+	if (auto it = entityToIndex.find(entity); it != entityToIndex.end())
 		remove(entity);
 }
 
 
 template<typename COMPONENT_TYPE>
-inline COMPONENT_TYPE& ComponentArray<COMPONENT_TYPE>::get(Entity entity)
+[[nodiscard]] inline COMPONENT_TYPE& ComponentArray<COMPONENT_TYPE>::get(Entity entity)
 {
-	if (entityToIndex.find(entity) == entityToIndex.end()) {
+	if (auto it = entityToIndex.find(entity); it == entityToIndex.end()) {
 		throw std::runtime_error("Trying to retrieve a component from an entity that doesn't have it.")
 	}
 
@@ -93,7 +93,7 @@ inline COMPONENT_TYPE& ComponentArray<COMPONENT_TYPE>::get(Entity entity)
 
 
 template<typename COMPONENT_TYPE>
-inline COMPONENT_TYPE ComponentArray<COMPONENT_TYPE>::operator[](Entity entity) const
+[[nodiscard]] inline COMPONENT_TYPE ComponentArray<COMPONENT_TYPE>::operator[](Entity entity) const
 {
 	return get(entity);
 }
